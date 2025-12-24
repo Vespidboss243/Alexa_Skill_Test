@@ -22,7 +22,7 @@ def chat():
 
     try:
         response = client.models.generate_content(
-            model="gemini-2.0-flash", 
+            model="gemini-2.5-flash-lite", 
             contents=user_message
         )
         return jsonify({"reply": response.text})
@@ -31,4 +31,5 @@ def chat():
 
 # Required for local testing
 if __name__ == "__main__":
+
     app.run(debug=True)
