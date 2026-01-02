@@ -38,7 +38,7 @@ def save_user_context(user_id, history):
         json.dump(history, f)
 
 # --- ALEXA HANDLER ---
-@app.route('/chat', methods=['POST']) # Alexa points here
+@app.route('/chat', methods=['POST'])
 def chat():
     data = request.json
     
@@ -52,7 +52,6 @@ def chat():
 
     # 3. Handle User Input (IntentRequest)
     if req_type == "IntentRequest":
-        # Get the query from Alexa's 'query' slot
         slots = data['request']['intent'].get('slots', {})
         user_message = slots.get('query', {}).get('value', "")
 
@@ -60,33 +59,34 @@ def chat():
             return alexa_response("I didn't quite catch that. Could you repeat it?")
 
         try:
-            # Load existing context
+            # Load existing history from /tmp
             history = load_user_context(user_id)
             
-            # Start Chat with history
+            # Start Chat with history at TOP level (Correct for 2026 SDK)
             chat_session = client.chats.create(
-                model="gemini-2.5-flash",
+                model="gemini-2.0-flash", 
                 history=history,
                 config=types.GenerateContentConfig(
-                    temperature=0.5,       
-                    max_output_tokens=500  
+                    temperature=0.5,       # Hardcoded
+                    max_output_tokens=500  # Hardcoded
                 )
             )
             
+            # Get Gemini Response
             response = chat_session.send_message(user_message)
             
-            # Save updated history (Convert parts to text strings for JSON)
-            updated_history = []
-            for msg in chat_session.history:
-                updated_history.append({
-                    "role": msg.role,
-                    "parts": [{"text": p.text} for p in msg.parts]
-                })
-            save_user_context(user_id, updated_history)
+            # 4. MANUALLY UPDATE HISTORY (Avoids 'Chat' object has no attribute 'history' error)
+            # We explicitly add the new turns to our local list
+            history.append({"role": "user", "parts": [{"text": user_message}]})
+            history.append({"role": "model", "parts": [{"text": response.text}]})
+            
+            # Save the updated list back to /tmp
+            save_user_context(user_id, history)
 
             return alexa_response(response.text)
             
         except Exception as e:
+            # This will catch things like 429 quota errors
             return alexa_response(f"Sorry, I ran into an error: {str(e)}")
 
     return alexa_response("I'm not sure how to handle that request.")
@@ -106,6 +106,7 @@ def alexa_response(text):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
