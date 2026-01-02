@@ -67,7 +67,11 @@ def chat():
             # Start Chat with history
             chat_session = client.chats.create(
                 model="gemini-2.0-flash-lite",
-                config=types.GenerateContentConfig(history=history)
+                config=types.GenerateContentConfig(
+                    history=history,
+                    temperature=0.5,       
+                    max_output_tokens=500  
+                )
             )
             
             response = chat_session.send_message(user_message)
@@ -103,4 +107,5 @@ def alexa_response(text):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
