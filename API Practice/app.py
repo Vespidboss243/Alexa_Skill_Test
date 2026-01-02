@@ -13,8 +13,7 @@ client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 SESSION_DIR = "sessions"
 MAX_IDLE_TIME = 1800  # 30 minutes in seconds
 
-if not os.path.exists(SESSION_DIR):
-    os.makedirs(SESSION_DIR)
+SESSION_DIR = "/tmp"
 
 # --- CONTEXT HELPERS ---
 def get_history_file(user_id):
@@ -107,5 +106,6 @@ def alexa_response(text):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
