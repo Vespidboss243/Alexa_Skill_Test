@@ -64,7 +64,7 @@ def chat():
             
             # Start Chat with history at TOP level (Correct for 2026 SDK)
             chat_session = client.chats.create(
-                model="gemini-2.0-flash", 
+                model="gemini-2.5-flash-lite", 
                 history=history,
                 config=types.GenerateContentConfig(
                     temperature=0.5,       # Hardcoded
@@ -106,6 +106,7 @@ def alexa_response(text):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
